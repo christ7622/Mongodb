@@ -1,0 +1,88 @@
+curl ipinfo.io/ip
+
+sudo vi /etc/mongod.conf
+#security:
+#  authorization: enabled
+
+sudo service mongod restart
+
+------------ install MongaDb support --------------
+
+python -m pip install pymongo
+python -m pip install pymongo[gssapi,tls]
+
+----------------------------------------------------
+# 先要用localhost登錄上去，創建一個admin，給予userAdminAnyDatabase的權限，可以管理所有數據庫的用戶：
+mongo 122.116.71.79
+use admin 
+db.createUser(
+  {
+    user: "admin",
+    pwd: "admin",
+    roles:
+    [
+      {
+        role: "userAdminAnyDatabase",
+        db: "admin"
+      }
+    ]
+  }
+)
+# 然後退出，再用admin登錄，創建其他用戶，給予dbOwner的權限，可以對某個數據庫進行所有操作：
+mongo 122.116.71.79/admin -u admin -p admin
+use pega
+ 
+db.createUser(
+  {
+    user: "pega",
+    pwd: "pega",
+    roles:
+    [
+      {
+        role: "dbOwner",
+        db: "pega"
+      }
+    ]
+  }
+)
+# 然後再用新建的用戶登錄，就可以操作數據庫了。
+
+db.auth('admin','admin')
+db.auth('pega','pega')
+
+db.test.find().pretty()
+show collections
+
+
+
+db.test.insert(
+  {
+    "address" : {
+      "street" : "2 Avenue",
+      "zipcode" : "10075",
+      "building" : "1480",
+      "coord" : [ -73.9557413, 40.7720266 ],
+    },
+    "borough" : "Manhattan",
+    "cuisine" : "Italian",
+    "grades" : [
+      {
+        "date" : ISODate("2014-10-01T00:00:00Z"),
+        "grade" : "A",
+        "score" : 11
+      },
+      {
+        "date" : ISODate("2014-01-16T00:00:00Z"),
+        "grade" : "B",
+        "score" : 17
+      }
+    ],
+    "name" : "Vella",
+    "restaurant_id" : "41704620"
+  }
+)
+
+
+
+------------------ python ----------------------------------
+
