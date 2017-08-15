@@ -1,0 +1,27 @@
+# install oracle driver
+# python -m pip install cx_Oracle
+import cx_Oracle
+
+
+
+def connect():
+	username = 'HR'
+	password = 'HR'
+	# create connection
+	oracleConn = cx_Oracle.connect(username, password, '127.0.0.1:1521/xe')
+
+	# activate cursor
+	oracleCursor = oracleConn.cursor()
+
+	oracleCursor.execute('select * from JOBS where (MIN_SALARY > 10000)')
+
+	result = oracleCursor.fetchall() 
+	count = oracleCursor.rowcount 
+	oracleCursor.close
+
+	return count, result
+
+
+count, result = connect()
+print count
+print result
