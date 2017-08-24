@@ -1,5 +1,9 @@
 #!/usr/bin/python
 
+HEADER_DIFFIMPEDANCE = "Diff Impedance (Ohm)"
+HEADER_LENGTH = "Length (mil)"
+HEADER_TRACEDELAY = " Trace Delay (ps)"
+
 def excelFilter(path, limit):
 	import csv
 	from xlsxwriter.workbook import Workbook
@@ -13,22 +17,30 @@ def excelFilter(path, limit):
 	
 	with open(csvfile, 'rt') as f:
 		reader = csv.reader(f)
+
+		# find the index of the column which we care about
+		row1 = next(reader)
+		INDEX_DIFFIMPEDANCE = row1.index(HEADER_DIFFIMPEDANCE)
+		INDEX_LENGTH = row1.index(HEADER_LENGTH)
+		INDEX_TRACEDELAY = row1.index(HEADER_TRACEDELAY)
+
 		for r, row in enumerate(reader):
 			totalColumn += 1
 			for c, col in enumerate(row):
 				# convert strings into integers from certain column
-				if (r != 0 and c in range(2,5) and col != ''):
+				if (r != 0 and c in [INDEX_DIFFIMPEDANCE, INDEX_LENGTH, INDEX_TRACEDELAY] and col != ''):
 					worksheet.write_number(r, c, float(col))
 	
 					# hide rows that don't match the filter.
-					if c == 2 and float(col) < float(limit):
+					if c == INDEX_DIFFIMPEDANCE and float(col) < float(limit):
 						worksheet.set_row(r, options={'hidden': True})
 				else:
 					worksheet.write(r, c, col)
+
 	
 	# Set the autofilter.
-	worksheet.autofilter('C2:C' + str(totalColumn))
-	worksheet.filter_column('C', 'x > ' + limit)
+	worksheet.autofilter(2-1, INDEX_DIFFIMPEDANCE, totalColumn-1, INDEX_DIFFIMPEDANCE) # ps: -1 due to the index begin from 0
+	worksheet.filter_column(INDEX_DIFFIMPEDANCE, 'x > ' + limit)
 	workbook.close()
 
 def main():
