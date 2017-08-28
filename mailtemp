@@ -1,54 +1,23 @@
-Hi David,
-
-關於PowerDC Table轉成tcl部分，有幾個問題想請教一下.
-
-首先假設table中存在以下的描述內容:(只標示Type/Net1/Net2/Component)
-
-[Power Rail Parameter]
-Type			:VRM
-Net1			:VCORE1_LX
-Net2			:GND
-Component		:U8003
-
-[Section 1]
-Type			:INTERCONNECT
-Net1			:VCORE1_LX
-Net2			:+VCORE
-Component		:L8001
-
-[Section 2]
-Type			:SINK
-Net1			:+VCORE
-Net2			:GND
-Component		:U0301
-
-Type			:SENSE
-Net1			:+VCORE
-Net2			:GND
-Component		:U0301.G32/U0301.F33
-
-
 sigrity::move net {PowerNets} {VCORE1_LX} {!}
 sigrity::update net selected 1 {VCORE1_LX} {!}
-
 sigrity::add pdcVRM -auto -net {VCORE1_LX,GND} -ckt {U8003} -voltage {0.9} {!}
-
-sigrity::move net {PowerNets} {+VCORE} {!}
+sigrity::update net selected 1 {VCORE1_LX} {!}
 sigrity::update net selected 1 {+VCORE} {!}
-
 sigrity::add pdcInter -auto -net {VCORE1_LX,+VCORE} -ckt {L8001} -current {41} -resistance {0.0009} {!}
-
-
-
-sigrity::add pdcSink -auto -net {+VCORE,GND} -ckt {U0301} -model {Equal Current} -voltage {0.9} ...(ignored)
-
 sigrity::move net {PowerNets} {+VCORE} {!}
 sigrity::update net selected 1 {+VCORE} {!}
-
+sigrity::add pdcSink -auto -net {+VCORE,GND} -ckt {U0301} -model {Equal Current} -voltage {0.9} -upperTolerance {2,%} -lowerTolerance {2,%} -pfMode {Worst} -current {64} {!}
+sigrity::move net {PowerNets} {+VCORE} {!}
+sigrity::update net selected 1 {+VCORE} {!}
 sigrity::link pdcElem {VRM_U8003_VCORE1_LX_GND} {Positive Sense Pin} {-Circuit {U0301} -Node {G32}} -LinkCktNode {!}
 sigrity::link pdcElem {VRM_U8003_VCORE1_LX_GND} {Negative Sense Pin} {-Circuit {U0301} -Node {F33}} -LinkCktNode {!}
-
-
-
-Regards,
-wayne
+sigrity::move net {PowerNets} {VCORE2_LX} {!}
+sigrity::update net selected 1 {VCORE2_LX} {!}
+sigrity::add pdcVRM -auto -net {VCORE2_LX,GND} -ckt {U8001} -voltage {0.9} {!}
+sigrity::update net selected 1 {VCORE2_LX} {!}
+sigrity::update net selected 1 {+VCORE} {!}
+sigrity::add pdcInter -auto -net {VCORE2_LX,+VCORE} -ckt {L8003} -current {41} -resistance {0.0009} {!}
+sigrity::move net {PowerNets} {+VCORE} {!}
+sigrity::update net selected 1 {+VCORE} {!}
+sigrity::link pdcElem {VRM_U8001_VCORE2_LX_GND} {Positive Sense Pin} {-Circuit {U0301} -Node {G32}} -LinkCktNode {!}
+sigrity::link pdcElem {VRM_U8001_VCORE2_LX_GND} {Negative Sense Pin} {-Circuit {U0301} -Node {F33}} -LinkCktNode {!}
