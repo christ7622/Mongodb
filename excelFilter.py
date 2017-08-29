@@ -1,10 +1,6 @@
 #!/usr/bin/python
 
-HEADER_DIFFIMPEDANCE = "Diff Impedance (Ohm)"
-HEADER_LENGTH = "Length (mil)"
-HEADER_TRACEDELAY = " Trace Delay (ps)"
-
-def excelFilter(path, limit):
+def excelFilter(path, limit, filter_name):
 	import csv
 	from xlsxwriter.workbook import Workbook
 	csvfile = path
@@ -20,27 +16,25 @@ def excelFilter(path, limit):
 
 		# find the index of the column which we care about
 		row1 = next(reader)
-		INDEX_DIFFIMPEDANCE = row1.index(HEADER_DIFFIMPEDANCE)
-		INDEX_LENGTH = row1.index(HEADER_LENGTH)
-		INDEX_TRACEDELAY = row1.index(HEADER_TRACEDELAY)
+		for c, col in enumerate(row1):
+			worksheet.write(0, c, col)
+		INDEX_FILTER = row1.index(filter_name)
 
 		for r, row in enumerate(reader):
 			totalColumn += 1
 			for c, col in enumerate(row):
 				# convert strings into integers from certain column
-				if (r != 0 and c in [INDEX_DIFFIMPEDANCE, INDEX_LENGTH, INDEX_TRACEDELAY] and col != ''):
-					worksheet.write_number(r, c, float(col))
-	
+				try:
+					worksheet.write_number(r+1, c, float(col))
 					# hide rows that don't match the filter.
-					if c == INDEX_DIFFIMPEDANCE and float(col) < float(limit):
-						worksheet.set_row(r, options={'hidden': True})
-				else:
-					worksheet.write(r, c, col)
-
+					if c == INDEX_FILTER and float(col) < float(limit):
+						worksheet.set_row(r+1, options={'hidden': True})
+				except ValueError:
+					worksheet.write(r+1, c, col)
 	
 	# Set the autofilter.
-	worksheet.autofilter(2-1, INDEX_DIFFIMPEDANCE, totalColumn-1, INDEX_DIFFIMPEDANCE) # ps: -1 due to the index begin from 0
-	worksheet.filter_column(INDEX_DIFFIMPEDANCE, 'x > ' + limit)
+	worksheet.autofilter(1, INDEX_FILTER, totalColumn-1, INDEX_FILTER) # ps: -1 due to the index begin from 0
+	worksheet.filter_column(INDEX_FILTER, 'x > ' + limit + ' or x == Blanks')
 	workbook.close()
 
 def main():
@@ -52,8 +46,14 @@ def main():
 		print "Argument Error!"
 		print "Usage: " + sys.argv[0] + " [path of *.csv] [filter number]"
 		return
+
+	try:
+		filter_name = sys.argv[3]
+	except:
+		filter_name = "Diff Impedance (Ohm)"
+
 	if(os.path.exists(path)):
-		excelFilter(path, limit)
+		excelFilter(path, limit, filter_name)
 	else:
 		print "file not exist!"
 
